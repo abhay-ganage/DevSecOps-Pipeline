@@ -1,0 +1,44 @@
+
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Python Setup') {
+            steps {
+                bat 'python --version'
+                bat 'pip --version'
+                bat 'pip install -r requirements.txt'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                bat 'python -m pytest tests'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t codevault:1.0 .'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'CodeVault CI Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'CodeVault CI Pipeline failed!'
+        }
+    }
+}
+
