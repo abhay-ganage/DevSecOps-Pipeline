@@ -3,80 +3,163 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "codevault"
-        IMAGE_TAG  = "1.0"
+        PYTHON_EXE = 'C:\\Python 3.10.1\\python.exe'
+        DOCKER_EXE = 'C:\\Users\\Abhay\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
+        TRIVY_EXE  = 'C:\\Users\\Abhay\\AppData\\Local\\Microsoft\\WinGet\\Links\\trivy.exe'
 
-        // Docker Desktop path for Jenkins Windows service
-        DOCKER_PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin"
-
-        // Common Trivy installation paths
-        TRIVY_PATH_1 = "C:\\Program Files\\trivy"
-        TRIVY_PATH_2 = "C:\\ProgramData\\chocolatey\\bin"
-        TRIVY_PATH_3 = "C:\\Program Files\\Trivy"
-
-        // Add Docker and possible Trivy locations to PATH
-        PATH = "${DOCKER_PATH};${TRIVY_PATH_1};${TRIVY_PATH_2};${TRIVY_PATH_3};${env.PATH}"
+        IMAGE_NAME = 'codevault:1.0'
     }
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Python Setup') {
             steps {
-                bat 'python --version'
-                bat 'pip --version'
+                bat '''
+                    echo ========================================
+                    echo Checking Python
+                    echo ========================================
 
-                bat 'pip install -r requirements.txt'
-                bat 'pip install -r requirements-dev.txt'
+                    if not exist "%PYTHON_EXE%" (
+                        echo ERROR: Python was not found at:
+                        echo %PYTHON_EXE%
+                        exit /b 1
+                    )
+
+                    "%PYTHON_EXE%" --version
+                    "%PYTHON_EXE%" -m pip --version
+
+                    echo.
+                    echo Installing application dependencies...
+                    "%PYTHON_EXE%" -m pip install -r requirements.txt
+
+                    if errorlevel 1 (
+                        echo ERROR: Application dependency installation failed.
+                        exit /b 1
+                    )
+
+                    echo.
+                    echo Installing development dependencies...
+                    "%PYTHON_EXE%" -m pip install -r requirements-dev.txt
+
+                    if errorlevel 1 (
+                        echo ERROR: Development dependency installation failed.
+                        exit /b 1
+                    )
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                bat 'python -m pytest tests'
+                bat '''
+                    echo ========================================
+                    echo Running Tests
+                    echo ========================================
+
+                    "%PYTHON_EXE%" -m pytest tests
+
+                    if errorlevel 1 (
+                        echo ERROR: Tests failed.
+                        exit /b 1
+                    )
+                '''
             }
         }
 
         stage('Security Scan') {
             steps {
-                bat 'bandit -r app'
-                bat 'pip-audit -r requirements.txt'
+                bat '''
+                    echo ========================================
+                    echo Bandit Security Scan
+                    echo ========================================
+
+                    "%PYTHON_EXE%" -m bandit -r app
+
+                    if errorlevel 1 (
+                        echo ERROR: Bandit security scan failed.
+                        exit /b 1
+                    )
+
+                    echo.
+                    echo ========================================
+                    echo pip-audit Dependency Scan
+                    echo ========================================
+
+                    "%PYTHON_EXE%" -m pip_audit -r requirements.txt
+
+                    if errorlevel 1 (
+                        echo ERROR: pip-audit found vulnerabilities.
+                        exit /b 1
+                    )
+                '''
             }
         }
 
         stage('Docker Build') {
             steps {
-                bat 'docker --version'
-                bat "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                bat '''
+                    echo ========================================
+                    echo Checking Docker
+                    echo ========================================
+
+                    if not exist "%DOCKER_EXE%" (
+                        echo ERROR: Docker was not found at:
+                        echo %DOCKER_EXE%
+                        exit /b 1
+                    )
+
+                    "%DOCKER_EXE%" --version
+
+                    echo.
+                    echo ========================================
+                    echo Building Docker Image
+                    echo ========================================
+
+                    "%DOCKER_EXE%" build -t %IMAGE_NAME% .
+
+                    if errorlevel 1 (
+                        echo ERROR: Docker build failed.
+                        exit /b 1
+                    )
+
+                    echo.
+                    echo Docker image built successfully:
+                    echo %IMAGE_NAME%
+                '''
             }
         }
 
         stage('Tool Check') {
             steps {
-                echo 'Checking installed DevSecOps tools...'
-
-                // Do NOT use "where docker" because Jenkins
-                // does not have the Windows where command in PATH.
-                bat 'docker --version'
-
-                // Check Trivy
                 bat '''
-                    if exist "C:\\Program Files\\trivy\\trivy.exe" (
-                        echo Trivy found in C:\\Program Files\\trivy
-                        "C:\\Program Files\\trivy\\trivy.exe" --version
-                    ) else if exist "C:\\ProgramData\\chocolatey\\bin\\trivy.exe" (
-                        echo Trivy found in Chocolatey
-                        "C:\\ProgramData\\chocolatey\\bin\\trivy.exe" --version
-                    ) else if exist "C:\\Program Files\\Trivy\\trivy.exe" (
-                        echo Trivy found in C:\\Program Files\\Trivy
-                        "C:\\Program Files\\Trivy\\trivy.exe" --version
-                    ) else (
-                        echo ERROR: Trivy executable was not found.
+                    echo ========================================
+                    echo Tool Check
+                    echo ========================================
+
+                    echo.
+                    echo Python:
+                    "%PYTHON_EXE%" --version
+
+                    if errorlevel 1 (
+                        echo ERROR: Python check failed.
+                        exit /b 1
+                    )
+
+                    echo.
+                    echo Docker:
+                    "%DOCKER_EXE%" --version
+
+                    if errorlevel 1 (
+                        echo ERROR: Docker check failed.
+                        exit /b 1
+                    )
+
+                    echo.
+                    echo Trivy:
+                    "%TRIVY_EXE%" --version
+
+                    if errorlevel 1 (
+                        echo ERROR: Trivy check failed.
                         exit /b 1
                     )
                 '''
@@ -86,16 +169,33 @@ pipeline {
         stage('Trivy Scan') {
             steps {
                 bat '''
-                    if exist "C:\\Program Files\\trivy\\trivy.exe" (
-                        "C:\\Program Files\\trivy\\trivy.exe" image --severity HIGH,CRITICAL codevault:1.0
-                    ) else if exist "C:\\ProgramData\\chocolatey\\bin\\trivy.exe" (
-                        "C:\\ProgramData\\chocolatey\\bin\\trivy.exe" image --severity HIGH,CRITICAL codevault:1.0
-                    ) else if exist "C:\\Program Files\\Trivy\\trivy.exe" (
-                        "C:\\Program Files\\Trivy\\trivy.exe" image --severity HIGH,CRITICAL codevault:1.0
-                    ) else (
-                        echo ERROR: Trivy executable was not found.
+                    echo ========================================
+                    echo Trivy Docker Image Scan
+                    echo ========================================
+
+                    if not exist "%TRIVY_EXE%" (
+                        echo ERROR: Trivy was not found at:
+                        echo %TRIVY_EXE%
                         exit /b 1
                     )
+
+                    echo Using Trivy:
+                    echo %TRIVY_EXE%
+
+                    echo.
+                    echo Scanning image:
+                    echo %IMAGE_NAME%
+
+                    "%TRIVY_EXE%" image --severity HIGH,CRITICAL %IMAGE_NAME%
+
+                    if errorlevel 1 (
+                        echo.
+                        echo ERROR: Trivy found HIGH or CRITICAL vulnerabilities.
+                        exit /b 1
+                    )
+
+                    echo.
+                    echo Trivy scan completed successfully.
                 '''
             }
         }
@@ -103,15 +203,15 @@ pipeline {
 
     post {
         success {
-            echo 'CodeVault CI Pipeline completed successfully!'
-            echo 'Tests passed.'
-            echo 'Security scans passed.'
-            echo 'Docker image built successfully.'
-            echo 'Trivy scan completed.'
+            echo '========================================'
+            echo 'CodeVault CI Pipeline SUCCESS!'
+            echo '========================================'
         }
 
         failure {
-            echo 'CodeVault CI Pipeline failed!'
+            echo '========================================'
+            echo 'CodeVault CI Pipeline FAILED!'
+            echo '========================================'
         }
 
         always {
