@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CodeVault Results</title>
+
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0b1020;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .result {
+            width: 90%;
+            max-width: 550px;
+            background: #151b2e;
+            padding: 45px;
+            text-align: center;
+            border-radius: 18px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            font-size: 38px;
+        }
+
+        .score {
+            font-size: 60px;
+            font-weight: bold;
+            margin: 25px 0;
+        }
+
+        .message {
+            color: #9ca3af;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #2563eb;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="result">
+
+    <h1>🏁 GAME OVER</h1>
+
+    <div class="score">
+        {{ score }}/{{ total }}
+    </div>
+
+    <div class="message">
+        {{ message }}
+    </div>
+
+    <p>❤️ Lives Remaining: {{ lives }}</p>
+
+    <a href="/">
+        <button>Play Again 🔄</button>
+    </a>
+
+</div>
+
+</body>
+</html>
+

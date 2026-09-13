@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CodeVault Challenge</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0b1020;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 750px;
+            background: #151b2e;
+            padding: 35px;
+            border-radius: 18px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin-bottom: 8px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #9ca3af;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: #0f1527;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .question-number {
+            color: #60a5fa;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .question {
+            font-size: 22px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .option {
+            margin: 12px 0;
+        }
+
+        .option input {
+            display: none;
+        }
+
+        .option label {
+            display: block;
+            padding: 16px;
+            background: #202840;
+            border: 1px solid #303a55;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .option label:hover {
+            background: #293451;
+            border-color: #60a5fa;
+        }
+
+        .option input:checked + label {
+            border-color: #60a5fa;
+            background: #263b62;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #2563eb;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>🔐 CODEVAULT</h1>
+        <p>Python & DevOps Challenge</p>
+    </div>
+
+    <div class="stats">
+        <span>📌 Level {{ level }}/{{ total }}</span>
+        <span>🏆 Score: {{ score }}</span>
+        <span>❤️ {{ lives }}</span>
+    </div>
+
+    <div class="question-number">
+        CHALLENGE {{ level }}
+    </div>
+
+    <div class="question">
+        {{ question.question }}
+    </div>
+
+    <form method="POST">
+
+        {% for option in question.options %}
+
+        <div class="option">
+            <input
+                type="radio"
+                id="option{{ loop.index }}"
+                name="answer"
+                value="{{ 'ABCD'[loop.index0] }}"
+                required
+            >
+
+            <label for="option{{ loop.index }}">
+                <strong>{{ 'ABCD'[loop.index0] }})</strong>
+                {{ option }}
+            </label>
+        </div>
+
+        {% endfor %}
+
+        <button type="submit">
+            Submit Answer →
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+</html>
+
