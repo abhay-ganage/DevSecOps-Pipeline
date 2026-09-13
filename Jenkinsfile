@@ -25,6 +25,13 @@ pipeline {
             }
         }
 
+        stage('Security Scan') {
+            steps {
+                bat 'bandit -r app'
+                bat 'pip-audit -r requirements.txt'
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 bat 'docker build -t codevault:1.0 .'
