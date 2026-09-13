@@ -1,9 +1,9 @@
-
+import os
 from flask import Flask, render_template, request, redirect, url_for, session
 import random
 
 app = Flask(__name__)
-app.secret_key = "devsecops-codevault-secret"
+app.secret_key = os.environ.get("SECRET_KEY", "development-secret")
 
 
 # Large question bank
@@ -244,5 +244,5 @@ def result():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)  # nosec B104
 
