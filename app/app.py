@@ -172,7 +172,7 @@ def index():
     session.clear()
 
     # Select 5 random questions from the full question bank
-    selected_questions = random.sample(QUESTIONS, 5)
+    selected_questions = random.sample(QUESTIONS, 5)  # nosec B311
 
     session["questions"] = selected_questions
     session["current"] = 0
