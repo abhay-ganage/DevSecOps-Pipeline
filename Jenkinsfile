@@ -1,6 +1,11 @@
-
 pipeline {
     agent any
+
+    environment {
+        PYTHON_HOME = 'C:\\Python 3.10.1'
+        TRIVY_HOME = 'C:\\Users\\Abhay\\AppData\\Local\\Microsoft\\WinGet\\Packages\\AquaSecurity.Trivy_Microsoft.Winget.Source_8wekyb3d8bbwe'
+        PATH = "${PYTHON_HOME};${PYTHON_HOME}\\Scripts;${TRIVY_HOME};${env.PATH}"
+    }
 
     stages {
 
@@ -40,6 +45,8 @@ pipeline {
 
         stage('Tool Check') {
             steps {
+                bat 'where python'
+                bat 'python --version'
                 bat 'where docker'
                 bat 'docker --version'
                 bat 'where trivy'
@@ -64,4 +71,3 @@ pipeline {
         }
     }
 }
-
