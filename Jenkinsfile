@@ -1,10 +1,8 @@
-
 pipeline {
     agent any
 
     environment {
-        DOCKER_PATH = 'C:\\Users\\Abhay\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin'
-        TRIVY_PATH = 'C:\\Users\\Abhay\\AppData\\Local\\Microsoft\\WinGet\\Packages\\AquaSecurity.Trivy_Microsoft.Winget.Source_8wekyb3d8bbwe'
+        PATH = "C:\\Python 3.10.1;C:\\Python 3.10.1\\Scripts;C:\\Users\\Abhay\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;C:\\Users\\Abhay\\AppData\\Local\\Microsoft\\WinGet\\Packages\\AquaSecurity.Trivy_Microsoft.Winget.Source_8wekyb3d8bbwe;${env.PATH}"
     }
 
     stages {
@@ -39,20 +37,23 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                bat '"%DOCKER_PATH%\\docker.exe" build -t codevault:1.0 .'
+                bat 'docker --version'
+                bat 'docker build -t codevault:1.0 .'
             }
         }
 
         stage('Tool Check') {
             steps {
-                bat '"%DOCKER_PATH%\\docker.exe" --version'
-                bat '"%TRIVY_PATH%\\trivy.exe" --version'
+                bat 'where docker'
+                bat 'docker --version'
+                bat 'where trivy'
+                bat 'trivy --version'
             }
         }
 
         stage('Trivy Scan') {
             steps {
-                bat '"%TRIVY_PATH%\\trivy.exe" fs .'
+                bat 'trivy fs .'
             }
         }
     }
