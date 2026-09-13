@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -8,6 +7,7 @@ pipeline {
         TRIVY_EXE  = 'C:\\Users\\Abhay\\AppData\\Local\\Microsoft\\WinGet\\Links\\trivy.exe'
 
         IMAGE_NAME = 'codevault:1.0'
+        CONTAINER_NAME = 'codevault'
     }
 
     stages {
@@ -199,18 +199,61 @@ pipeline {
                 '''
             }
         }
+
+        stage('Deploy') {
+            steps {
+                bat '''
+                    echo ========================================
+                    echo Deploying CodeVault Application
+                    echo ========================================
+
+                    echo.
+                    echo Stopping existing container if running...
+                    "%DOCKER_EXE%" rm -f %CONTAINER_NAME% 2>nul
+
+                    echo.
+                    echo Starting new container...
+                    "%DOCKER_EXE%" run -d ^
+                        --name %CONTAINER_NAME% ^
+                        -p 5000:5000 ^
+                        %IMAGE_NAME%
+
+                    if errorlevel 1 (
+                        echo ERROR: Docker container failed to start.
+                        exit /b 1
+                    )
+
+                    echo.
+                    echo ========================================
+                    echo Verifying Container
+                    echo ========================================
+
+                    "%DOCKER_EXE%" ps --filter "name=%CONTAINER_NAME%"
+
+                    echo.
+                    echo ========================================
+                    echo Application Deployed Successfully
+                    echo ========================================
+                    echo Container: %CONTAINER_NAME%
+                    echo Image: %IMAGE_NAME%
+                    echo Port: 5000
+                    echo Application URL: http://localhost:5000
+                '''
+            }
+        }
     }
 
     post {
         success {
             echo '========================================'
-            echo 'CodeVault CI Pipeline SUCCESS!'
+            echo 'CodeVault CI/CD Pipeline SUCCESS!'
             echo '========================================'
+            echo 'Application is available at: http://localhost:5000'
         }
 
         failure {
             echo '========================================'
-            echo 'CodeVault CI Pipeline FAILED!'
+            echo 'CodeVault CI/CD Pipeline FAILED!'
             echo '========================================'
         }
 
@@ -219,4 +262,3 @@ pipeline {
         }
     }
 }
-
