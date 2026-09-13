@@ -37,6 +37,21 @@ pipeline {
                 bat 'docker build -t codevault:1.0 .'
             }
         }
+
+        stage('Tool Check') {
+            steps {
+                bat 'where docker'
+                bat 'docker --version'
+                bat 'where trivy'
+                bat 'trivy --version'
+            }
+        }
+
+        stage('Trivy Scan') {
+            steps {
+                bat 'trivy fs .'
+            }
+        }
     }
 
     post {
